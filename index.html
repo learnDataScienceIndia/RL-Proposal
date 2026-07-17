@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Proposal – Reloop Recycling FZE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ── Variables ── */
+    :root {
+      --green: #0a7f3f;
+      --green-dk: #065c2c;
+      --green-lt: #e8f5ed;
+      --blue: #2fa4d7;
+      --blue-dk: #1a6e9e;
+      --blue-lt: #e5f4fb;
+      --grey: #f4f6f8;
+      --border: #c8d4dc;
+      --text: #1a2332;
+      --muted: #6b7a8d;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #d0dae3;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px 12px 40px;
+      min-height: 100vh;
+    }
+
+    /* ═══════════════ TOOLBAR ═══════════════ */
+    .toolbar {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .lbl {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    select.cur-sel {
+      background: #fff;
+      border: 2px solid var(--green);
+      border-radius: 7px;
+      padding: 5px 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green-dk);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all .18s;
+      border: none;
+    }
+
+    .btn-add {
+      background: var(--green-lt);
+      color: var(--green-dk);
+      border: 1.5px solid var(--green);
+    }
+
+    .btn-add:hover {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .btn-print {
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(10, 127, 63, .28);
+      padding: 8px 20px;
+    }
+
+    .btn-print:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 20px rgba(10, 127, 63, .38);
+    }
+
+    .btn-print svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+    }
+
+    /* ═══════════════ INVOICE WRAPPER ═══════════════ */
+    .po-wrap {
+      width: 100%;
+      max-width: 900px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, .14);
+    }
+
+    /* ═══════════════ HEADER ═══════════════ */
+    .po-header {
+      background: #fff;
+    }
+
+    .top-bar {
+      height: 6px;
+      background: linear-gradient(90deg, var(--green) 0%, var(--blue) 100%);
+    }
+
+    .header-grid {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      border-bottom: 2px solid var(--border);
+      background: var(--grey);
+      padding: 16px 20px;
+      gap: 20px;
+    }
+
+    .info-logo img {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .header-company-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .header-proposal-title {
+      text-align: right;
+    }
+
+    .prop-title-badge {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--blue-dk);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    /* Editable text */
+    [contenteditable] {
+      outline: none;
+      border-bottom: 1px dashed transparent;
+      transition: border-color .2s;
+      display: inline-block;
+      min-width: 20px;
+    }
+
+    [contenteditable]:hover {
+      border-color: var(--blue);
+    }
+
+    [contenteditable]:focus {
+      border-color: var(--green);
+      background: rgba(10, 127, 63, .04);
+      border-radius: 2px;
+    }
+
+    .co-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--green-dk);
+    }
+
+    .co-trn {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .co-details {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 2px;
+    }
+
+    /* ═══════════════ BODY ═══════════════ */
+    .po-body {
+      padding: 20px 20px 16px;
+    }
+
+    /* TITLE SECTION */
+    .hero-title-section {
+      text-align: center;
+      padding: 10px 20px 20px;
+      margin-bottom: 20px;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .hero-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--green-dk);
+      margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--blue-dk);
+    }
+
+    /* META GRID */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .meta-box {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .meta-box-head {
+      background: var(--grey);
+      padding: 8px 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .meta-box-body {
+      padding: 10px 12px;
+    }
+
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .meta-table td {
+      padding: 4px 0;
+      font-size: 12px;
+      vertical-align: top;
+    }
+
+    .meta-table td.lbl {
+      font-weight: 600;
+      color: var(--muted);
+      width: 110px;
+    }
+
+    .meta-table input,
+    .meta-table textarea {
+      width: 100%;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--text);
+      resize: none;
+    }
+
+    .meta-table textarea {
+      overflow: hidden;
+      min-height: 18px;
+      line-height: 1.4;
+      box-sizing: border-box;
+    }
+
+    /* ITEMS TABLE */
+    .item-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      margin-bottom: 16px;
+    }
+
+    .item-tbl thead tr {
+      background: linear-gradient(90deg, var(--green-dk), var(--blue-dk));
+      color: #fff;
+    }
+
+    .item-tbl thead th {
+      padding: 6px 4px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: 1px solid rgba(255, 255, 255, .2);
+      text-align: center;
+      white-space: normal;
+    }
+
+    .item-tbl thead th.dh {
+      text-align: left;
+    }
+
+    .item-tbl tbody tr {
+      background: #fff;
+    }
+
+    .item-tbl tbody tr:nth-child(even) {
+      background: #f8fbfc;
+    }
+
+    .item-tbl tbody tr:hover {
+      background: var(--green-lt);
+    }
+
+    .item-tbl tbody td {
+      border: 1px solid var(--border);
+      padding: 5px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .item-tbl tbody td.dtd {
+      text-align: left;
+    }
+
+    .item-tbl tbody td.sr {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      width: 34px;
+    }
+
+    .item-tbl tbody td input,
+    .item-tbl tbody td textarea {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 11.5px;
+      color: var(--text);
+      padding: 3px 4px;
+      outline: none;
+    }
+
+    .item-tbl tbody td textarea {
+      resize: none;
+      overflow: hidden;
+      min-height: 21px;
+      line-height: 1.4;
+      box-sizing: border-box;
+    }
+
+    .item-tbl tbody td.dtd input,
+    .item-tbl tbody td.dtd textarea {
+      text-align: left;
+    }
+
+    .item-tbl tbody td input:focus,
+    .item-tbl tbody td textarea:focus {
+      background: rgba(10, 127, 63, .06);
+      border-radius: 3px;
+    }
+
+    .amt-inp {
+      font-weight: 600;
+      color: var(--green-dk) !important;
+    }
+
+    /* Remove row */
+    .rm-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #c0392b;
+      font-size: 14px;
+      padding: 2px 5px;
+      border-radius: 4px;
+      transition: background .15s;
+    }
+
+    .rm-btn:hover {
+      background: #fdecea;
+    }
+
+    /* Totals */
+    .sub-tr td {
+      padding: 7px 12px !important;
+      font-size: 13px;
+      font-weight: 700;
+      background: #f8fbfc;
+      border-color: var(--border) !important;
+    }
+
+    .sub-lbl {
+      text-align: right !important;
+      color: var(--text);
+    }
+
+    .sub-val {
+      text-align: center !important;
+      color: var(--text);
+    }
+
+    .vat-tr td {
+      padding: 7px 12px !important;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: var(--green-lt);
+      border-color: var(--border) !important;
+    }
+
+    .vat-lbl {
+      text-align: right !important;
+      color: var(--green-dk);
+    }
+
+    .vat-val {
+      text-align: center !important;
+      color: var(--green-dk);
+    }
+
+    .gt-tr {
+      background: linear-gradient(90deg, var(--green-dk), var(--blue-dk)) !important;
+    }
+
+    .gt-tr td {
+      padding: 9px 12px !important;
+      border-color: transparent !important;
+    }
+
+    .gt-lbl {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      text-align: right !important;
+      letter-spacing: .5px;
+    }
+
+    .gt-val {
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      text-align: center !important;
+      white-space: nowrap;
+      min-width: 120px;
+    }
+
+    /* VAT Toggle Button — GREEN */
+    .vat-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all .2s;
+      border: 1.5px solid var(--green);
+      background: var(--green-lt);
+      color: var(--green-dk);
+      user-select: none;
+    }
+
+    .vat-toggle-btn.active {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(10, 127, 63, .35);
+    }
+
+    .vat-toggle-btn .vat-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      transition: background .2s;
+    }
+
+    .vat-toggle-btn.active .vat-dot {
+      background: #fff;
+    }
+
+    /* TH Column Controls */
+    .th-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 0;
+    }
+
+    .th-label {
+      display: block;
+      text-align: center;
+      outline: none;
+      border-bottom: 1px dashed transparent;
+      transition: border-color .2s;
+      cursor: text;
+      min-width: 30px;
+      word-break: break-word;
+    }
+
+    .th-label:hover {
+      border-bottom-color: rgba(255, 255, 255, .55) !important;
+    }
+
+    .th-label:focus {
+      border-bottom-color: rgba(255, 255, 255, .9) !important;
+      background: rgba(255, 255, 255, .12) !important;
+      border-radius: 2px;
+    }
+
+    .th-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-top: 3px;
+    }
+
+    .th-btn {
+      background: rgba(255, 255, 255, .18);
+      border: 1px solid rgba(255, 255, 255, .35);
+      color: #fff;
+      border-radius: 3px;
+      font-size: 9px;
+      padding: 1px 5px;
+      cursor: pointer;
+      line-height: 1.5;
+      transition: background .15s;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+    }
+
+    .th-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, .38);
+    }
+
+    .th-btn:disabled {
+      opacity: .28;
+      cursor: not-allowed;
+    }
+
+    .th-btn.th-del {
+      background: rgba(220, 53, 69, .28);
+      border-color: rgba(220, 53, 69, .5);
+    }
+
+    .th-btn.th-del:hover {
+      background: rgba(220, 53, 69, .65);
+    }
+
+    /* Auto Calc Toggle — BLUE */
+    .auto-calc-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all .2s;
+      border: 1.5px solid var(--blue);
+      background: var(--blue-lt);
+      color: var(--blue-dk);
+      user-select: none;
+    }
+
+    .auto-calc-btn.active {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(47, 164, 215, .35);
+    }
+
+    .auto-calc-btn .ac-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--blue);
+      transition: background .2s;
+    }
+
+    .auto-calc-btn.active .ac-dot {
+      background: #fff;
+    }
+
+    /* ═══════════════ ROW CONTROLS ═══════════════ */
+    .row-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 20px;
+      background: var(--grey);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .row-cnt {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ═══════════════ GUARANTEE & TERMS ═══════════════ */
+    .info-section {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .info-block-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--green-dk);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .info-block-text {
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .info-block-text ul {
+      margin-left: 16px;
+      margin-top: 4px;
+    }
+
+    /* ═══════════════ BOTTOM SECTION (PAYMENT + SIGNATURE) ═══════════════ */
+    .bottom-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .pay-head {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      padding-bottom: 5px;
+      margin-bottom: 8px;
+      border-bottom: 2px solid var(--green);
+      display: inline-block;
+    }
+
+    .pay-tbl {
+      width: auto;
+      border-collapse: collapse;
+      font-size: 11.5px;
+    }
+
+    .pay-tbl td {
+      padding: 5px 12px;
+      border: 1.5px solid var(--border);
+    }
+
+    .pay-tbl td.plbl {
+      font-weight: 700;
+      background: var(--grey);
+      white-space: nowrap;
+      width: 120px;
+    }
+
+    .pay-tbl td input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'Inter', sans-serif;
+      font-size: 11.5px;
+      color: var(--text);
+      min-width: 180px;
+    }
+
+    /* Signature col */
+    .sig-col {
+      text-align: center;
+    }
+
+    .sig-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .sig-row {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 20px;
+    }
+
+    .sig-area {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .sig-placeholder {
+      height: 70px;
+      width: 170px;
+    }
+
+    .sig-line {
+      border-bottom: 1.5px solid var(--green);
+      margin-top: 2px;
+      width: 170px;
+    }
+
+    .sig-line-lbl {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 5px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .stamp-placeholder {
+      width: 120px;
+      height: 120px;
+      border: 1.5px dashed var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    /* ═══════════════ FOOTER ═══════════════ */
+    .po-footer {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Bottom strip */
+    .foot-strip {
+      background: linear-gradient(90deg, var(--blue-dk), var(--green-dk));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      font-size: 10px;
+      color: rgba(255, 255, 255, .85);
+      font-weight: 500;
+    }
+
+    /* ═══════════════ PRINT ═══════════════ */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+
+      html,
+      body {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+        min-height: unset !important;
+      }
+
+      .toolbar,
+      .row-ctrl,
+      .rm-btn,
+      .no-print {
+        display: none !important;
+      }
+
+      .po-wrap {
+        max-width: 100% !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border: none !important;
+        margin: 0 !important;
+        margin-bottom: 40px !important;
+        padding: 0 !important;
+        background: #fff !important;
+        position: relative !important;
+        z-index: 10 !important;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .po-body {
+        padding: 12px 16px !important;
+      }
+
+      .header-grid {
+        padding: 12px 16px !important;
+      }
+
+      .hero-title-section {
+        padding: 5px 16px 15px !important;
+        margin-bottom: 15px !important;
+      }
+
+      .info-section {
+        padding: 12px 16px !important;
+        gap: 15px !important;
+      }
+
+      .bottom-section {
+        padding: 12px 16px 16px !important;
+      }
+
+      .meta-box-body {
+        padding: 6px 10px !important;
+      }
+
+      [contenteditable] {
+        border-bottom: none !important;
+        background: transparent !important;
+      }
+
+      input,
+      textarea {
+        background: transparent !important;
+        resize: none !important;
+      }
+
+      .th-ctrl {
+        display: none !important;
+      }
+
+      .th-label {
+        border-bottom: none !important;
+        cursor: default !important;
+      }
+
+      /* Allow table to flow naturally and prevent right-side cut-off */
+      .item-tbl {
+        page-break-inside: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        word-wrap: break-word !important;
+      }
+
+      .item-tbl th,
+      .item-tbl td {
+        width: auto !important;
+        padding: 4px 4px !important;
+        font-size: 9px !important;
+        word-break: break-word !important;
+      }
+
+      .item-tbl input,
+      .item-tbl textarea {
+        font-size: 9px !important;
+      }
+
+      .item-tbl thead {
+        display: table-header-group;
+      }
+
+      /* repeat header on each page */
+      .item-tbl tfoot {
+        display: table-row-group;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      /* appear ONCE at end — overrides browser default footer-group behaviour */
+      .item-tbl tbody tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      /* no mid-row breaks */
+
+      /* Keep these blocks together on one page if possible */
+      .info-section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      .bottom-section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      /* ── Footer Strip ── */
+      .po-footer {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        z-index: 1 !important;
+      }
+
+      .foot-strip {
+        width: 100% !important;
+        margin: 0 !important;
+      }
+
+      /* Remove any leftover height that creates blank space */
+      html,
+      body {
+        height: auto !important;
+      }
+
+      .po-wrap {
+        height: auto !important;
+        min-height: unset !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════ TOOLBAR ══════════ -->
+  <div class="toolbar no-print" id="toolbar">
+    <div class="toolbar-left">
+      <span class="lbl">Currency:</span>
+      <select class="cur-sel" id="curSel" onchange="applyCurrency()">
+        <option value="AED" selected>🇦🇪 AED</option>
+        <option value="USD">🇺🇸 USD</option>
+        <option value="EUR">🇪🇺 EUR</option>
+        <option value="GBP">🇬🇧 GBP</option>
+        <option value="INR">🇮🇳 INR</option>
+      </select>
+      <button class="btn btn-add" onclick="addRow()">＋ Add Row</button>
+      <button class="btn btn-add" onclick="addCol()" title="Add a new column to the table">＋ Add Col</button>
+      <button id="autoCalcBtn" class="auto-calc-btn active" onclick="toggleAutoCalc()"
+        title="Toggle auto-calculation (Qty × Rate = Total)">
+        <span class="ac-dot"></span> Auto Calc
+      </button>
+      <button id="vatToggleBtn" class="vat-toggle-btn" onclick="toggleVAT()" title="Toggle 5% VAT">
+        <span class="vat-dot"></span> VAT 5%
+      </button>
+      <button class="btn btn-add" style="background:#e5f4fb;color:#1a6e9e;border-color:var(--blue);"
+        onclick="saveData()">💾 Save</button>
+      <label class="btn btn-add"
+        style="background:#e5f4fb;color:#1a6e9e;border-color:var(--blue);cursor:pointer;margin:0;">
+        📂 Load
+        <input type="file" accept=".json" style="display:none;" onchange="loadData(event)" />
+      </label>
+      <div style="display:flex; align-items:center; gap:8px; margin-left:15px; border-left: 2px solid #ccc; padding-left: 15px;">
+        <span style="font-size:12px; font-weight:700; color:var(--text);" title="Push footer to the bottom of the printed page">Footer Push:</span>
+        <input type="range" min="0" max="800" value="0" oninput="document.getElementById('manual-spacer').style.height = this.value + 'px'" style="width: 80px; cursor: pointer;" title="Slide to adjust footer position">
+      </div>
+    </div>
+    <button class="btn btn-print" onclick="window.print()">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+      </svg>
+      Download as PDF
+    </button>
+  </div>
+
+  <!-- ══════════ DOCUMENT WRAPPER ══════════ -->
+  <div class="po-wrap" id="inv-doc">
+
+    <!-- ══ HEADER ══ -->
+    <header class="po-header">
+      <div class="top-bar"></div>
+      <div class="header-grid">
+        <div class="info-logo">
+          <img src="logo.png" alt="Reloop Recycling Logo" />
+        </div>
+        <div class="header-company-info">
+          <div class="co-name" contenteditable="true">Reloop Recycling FZE</div>
+          <div class="co-trn">TRN: <span contenteditable="true">105170462300003</span></div>
+          <div class="co-details"
+            style="display:flex; flex-direction:column; gap:6px; margin-top:6px; color:var(--muted);">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <span style="display:flex; align-items:center; gap:4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green-dk)" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                <span contenteditable="true">info@reloopglobal.com</span>
+              </span>
+              <span style="display:flex; align-items:center; gap:4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green-dk)" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                  </path>
+                </svg>
+                <span contenteditable="true">+971 543252882</span>
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <span style="display:flex; align-items:center; gap:4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green-dk)" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                  </path>
+                </svg>
+                <span contenteditable="true">www.reloopglobal.com</span>
+              </span>
+              <span style="display:flex; align-items:center; gap:4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green-dk)" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span contenteditable="true">RA08 TC05, JAFZA, Dubai, UAE</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="header-proposal-title">
+          <div class="prop-title-badge" contenteditable="true">Proposal</div>
+          <div
+            style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:3px;display:flex;align-items:center;justify-content:flex-end;">
+            Quote No: <input type="text" id="quoteNo"
+              style="border:none;border-bottom:1px solid #ccc;outline:none;font-family:inherit;width:100px;text-align:center;margin-left:5px;font-weight:700;color:var(--text);"
+              value="REL-2026-001" />
+          </div>
+          <div
+            style="font-size:11px;color:var(--muted);font-weight:600;display:flex;align-items:center;justify-content:flex-end;">
+            Date: <input type="text" id="propDate"
+              style="border:none;border-bottom:1px solid #ccc;outline:none;font-family:inherit;width:100px;text-align:center;margin-left:5px;font-weight:700;color:var(--text);"
+              value="22-Apr-2026" />
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ══ BODY ══ -->
+    <main class="po-body">
+
+      <!-- Title Section -->
+      <div class="hero-title-section">
+        <div class="hero-title" contenteditable="true">Proposal for Secure Product Destruction & Recycling</div>
+        <div class="hero-subtitle" contenteditable="true">Working to make you a global sustainability champion</div>
+      </div>
+
+      <!-- Meta Details Grid -->
+      <div class="meta-grid">
+        <!-- Prepared For (Client) -->
+        <div class="meta-box">
+          <div class="meta-box-head">Prepared For / Bill To</div>
+          <div class="meta-box-body">
+            <table class="meta-table">
+              <tr>
+                <td class="lbl">Company Name:</td>
+                <td><textarea rows="1" placeholder="Client Company Name"
+                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td>
+              </tr>
+              <tr>
+                <td class="lbl">Address:</td>
+                <td><textarea rows="1" placeholder="Client Address"
+                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td>
+              </tr>
+              <tr>
+                <td class="lbl">Contact Person:</td>
+                <td><textarea rows="1" placeholder="Contact Name"
+                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td>
+              </tr>
+              <tr>
+                <td class="lbl">Phone:</td>
+                <td><textarea rows="1" placeholder="+971 XX XXX XXXX"
+                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td>
+              </tr>
+              <tr>
+                <td class="lbl">Email:</td>
+                <td><textarea rows="1" placeholder="email@client.com"
+                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Prepared By (Reloop) -->
+        <div class="meta-box">
+          <div class="meta-box-head">Prepared By</div>
+          <div class="meta-box-body">
+            <table class="meta-table">
+              <tr>
+                <td class="lbl">Name:</td>
+                <td><textarea rows="1"
+                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">Smit Chauhan</textarea>
+                </td>
+              </tr>
+              <tr>
+                <td class="lbl">Position:</td>
+                <td><textarea rows="1"
+                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">Business Development Executive</textarea>
+                </td>
+              </tr>
+              <tr>
+                <td class="lbl">Email:</td>
+                <td><textarea rows="1"
+                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">smit@reloopglobal.com</textarea>
+                </td>
+              </tr>
+              <tr>
+                <td class="lbl">Phone:</td>
+                <td><textarea rows="1"
+                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">+971 543252882</textarea>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Service Table -->
+      <table class="item-tbl" id="itemTbl">
+        <thead>
+          <tr id="thead-row"></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot>
+          <tr class="sub-tr">
+            <td colspan="5" class="sub-lbl footer-span">Subtotal</td>
+            <td class="sub-val" id="subVal">0.00</td>
+            <td class="no-print"></td>
+          </tr>
+          <tr class="vat-tr" id="vatRow" style="display:none;">
+            <td colspan="5" class="vat-lbl footer-span">VAT (5%)</td>
+            <td class="vat-val" id="vatVal">0.00</td>
+            <td class="no-print"></td>
+          </tr>
+          <tr class="gt-tr">
+            <td colspan="5" class="gt-lbl footer-span">Grand Total</td>
+            <td class="gt-val" id="gtVal"><span id="curSymDisplay">AED</span> 0.00</td>
+            <td class="no-print"></td>
+          </tr>
+        </tfoot>
+      </table>
+
+    </main>
+
+    <!-- ══ ROW CONTROLS ══ -->
+    <div class="row-ctrl no-print">
+      <button class="btn btn-add" onclick="addRow()">＋ Add Row</button>
+      <span class="row-cnt" id="rowCnt"></span>
+    </div>
+
+    <!-- ══ GUARANTEE & TERMS ══ -->
+    <div class="info-section">
+      <div>
+        <div class="info-block-title">Our Guarantee</div>
+        <div class="info-block-text" contenteditable="true">
+          Reloop Recycling guarantees the completely secure, transparent, and eco-friendly destruction of your products.
+          Our process ensures zero leakage into secondary markets. We prioritize sustainability and adhere to the
+          highest global standards for waste management and recycling.
+        </div>
+      </div>
+      <div>
+        <div class="info-block-title">Terms & Conditions</div>
+        <div class="info-block-text">
+          <ul contenteditable="true">
+            <li><strong>Proposal Validity:</strong> 15 Days from the date of issuance.</li>
+            <li><strong>Weight Measurement:</strong> Final weight considered for billing will be exactly as recorded at
+              our recycling facility.</li>
+            <li><strong>Compliance:</strong> Operations comply with UAE local municipality regulations.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ BOTTOM SECTION (PAYMENT + SIGNATURE) ══ -->
+    <div class="bottom-section">
+      <!-- Payment Details -->
+      <div class="pay-section">
+        <div class="pay-head">Bank Details</div>
+        <table class="pay-tbl">
+          <tr>
+            <td class="plbl">Payment terms</td>
+            <td><input type="text" id="payTerms" value="Advance / As Agreed" /></td>
+          </tr>
+          <tr>
+            <td class="plbl">Bank Name</td>
+            <td><input type="text" id="bankName" value="RAKBANK" /></td>
+          </tr>
+          <tr>
+            <td class="plbl">Account Name</td>
+            <td><input type="text" id="accName" value="Reloop Recycling FZE" /></td>
+          </tr>
+          <tr>
+            <td class="plbl">Account Number</td>
+            <td><input type="text" id="accNum" value="0333716508001" /></td>
+          </tr>
+          <tr>
+            <td class="plbl">IBAN</td>
+            <td><input type="text" id="ibanNum" value="AE430400000333716508001" /></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Signature + Stamp -->
+      <div class="sig-col">
+        <div class="sig-row">
+          <!-- Stamp placeholder -->
+          <div class="stamp-placeholder" style="border: none;" contenteditable="true">
+            <img src="https://learndatascienceindia.github.io/RL-Proposal-manual/seal.png" alt="Company Stamp"
+              style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ FOOTER SPACER ══ -->
+    <div id="manual-spacer" style="height: 0px; width: 100%;"></div>
+
+  </div><!-- /inv-doc -->
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="po-footer">
+    <!-- Bottom strip -->
+    <div class="foot-strip">
+      <span>📞 +971 543252882</span>
+      <span>🌐 www.reloopglobal.com</span>
+      <span>✉ info@reloopglobal.com</span>
+    </div>
+  </footer>
+
+  <!-- ══════════ JAVASCRIPT ══════════ -->
+  <script>
+    /* ── State ── */
+    let rowId = 0;
+    let colIdCtr = 0;
+    let curCode = 'AED';
+    let vatEnabled = false;
+    let autoCalc = true;
+    let rowOrder = [];
+
+    const SYM = { AED: 'AED', USD: '$', EUR: '€', GBP: '£', INR: '₹' };
+
+    /* ── Column Definitions ── */
+    let colDefs = [
+      { id: 'c_desc', header: 'Product / Service', type: 'text', width: '', isDesc: true, fixed: true },
+      { id: 'c_uom', header: 'UOM', type: 'text', width: '80px' },
+      { id: 'c_rate', header: 'Unit Rate', type: 'number', width: '100px', isRate: true },
+      { id: 'c_qty', header: 'Quantity', type: 'number', width: '70px', isQty: true },
+      { id: 'c_amount', header: 'Total', type: 'number', width: '120px', isAmount: true, fixed: true },
+    ];
+
+    /* ═══════════════════════════════
+       INIT
+    ═══════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', () => {
+      const d = new Date();
+      const mo = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      document.getElementById('propDate').value = `${d.getDate()}-${mo[d.getMonth()]}-${d.getFullYear()}`;
+      renderHeaders();
+      for (let i = 0; i < 4; i++) addRow();
+      updateAutoCalcBtn();
+    });
+
+    /* ═══════════════════════════════
+       RENDER HEADERS
+    ═══════════════════════════════ */
+    function renderHeaders() {
+      const theadRow = document.getElementById('thead-row');
+      let html = `<th style="width:34px">Sr.No</th>`;
+
+      colDefs.forEach((col, idx) => {
+        const moveable = !col.fixed;
+        const canLeft = moveable && idx > 0 && !colDefs[idx - 1]?.fixed;
+        const canRight = moveable && idx < colDefs.length - 1 && !colDefs[idx + 1]?.fixed;
+        const canRemove = moveable;
+
+        const wStyle = col.width ? `width:${col.width};` : '';
+        const cCls = col.isDesc ? 'dh' : '';
+        const badge = (col.isRate || col.isAmount)
+          ? ` <small class="curHdr" style="font-size:9px;font-weight:500;opacity:.75;">(${curCode})</small>` : '';
+
+        html += `
+        <th class="${cCls}" style="${wStyle}min-width:55px;" data-col="${col.id}">
+          <div class="th-inner">
+            <span class="th-label" contenteditable="true" spellcheck="false"
+                  onblur="updateColHeader('${col.id}',this)">${col.header}${badge}</span>
+            <div class="th-ctrl no-print">
+              <button class="th-btn" onclick="moveCol('${col.id}',-1)" title="Move left"  ${!canLeft ? 'disabled' : ''}>&#9664;</button>
+              <button class="th-btn" onclick="moveCol('${col.id}', 1)" title="Move right" ${!canRight ? 'disabled' : ''}>&#9654;</button>
+              ${canRemove
+            ? `<button class="th-btn th-del" onclick="removeCol('${col.id}')" title="Remove column">&#10005;</button>`
+            : `<span style="display:inline-block;width:20px;"></span>`}
+            </div>
+          </div>
+        </th>`;
+      });
+
+      html += `<th style="width:30px" class="no-print"></th>`;
+      theadRow.innerHTML = html;
+      updateFooterColspan();
+    }
+
+    /* ── Update Column Header Text ── */
+    function updateColHeader(colId, el) {
+      const col = colDefs.find(c => c.id === colId);
+      if (col) col.header = el.innerText.trim() || col.header;
+    }
+
+    /* ── Update Footer Colspan ── */
+    function updateFooterColspan() {
+      const span = colDefs.length;
+      document.querySelectorAll('.footer-span').forEach(td => { td.colSpan = span; });
+    }
+
+    /* ═══════════════════════════════
+       ADD COLUMN
+    ═══════════════════════════════ */
+    function addCol() {
+      const newId = `c_custom_${++colIdCtr}`;
+      const amtIdx = colDefs.findIndex(c => c.isAmount);
+      const insertAt = amtIdx >= 0 ? amtIdx : colDefs.length;
+      colDefs.splice(insertAt, 0, { id: newId, header: 'New Column', type: 'text', width: '100px' });
+
+      document.querySelectorAll('#tbody tr').forEach(tr => {
+        const amtTd = tr.querySelector('td[data-col="c_amount"]');
+        const newTd = document.createElement('td');
+        newTd.dataset.col = newId;
+        newTd.style.cssText = 'border:1px solid var(--border);padding:5px;text-align:center;vertical-align:middle;';
+
+        const inp = document.createElement('textarea');
+        inp.rows = 1;
+        inp.placeholder = '—';
+        inp.style.cssText = "width:100%;border:none;background:transparent;text-align:center;font-family:'Inter',sans-serif;font-size:11.5px;color:var(--text);padding:3px 4px;outline:none;resize:none;overflow:hidden;box-sizing:border-box;";
+
+        inp.addEventListener('input', function () {
+          this.style.height = 'auto';
+          this.style.height = this.scrollHeight + 'px';
+          recalcTotal();
+        });
+
+        newTd.appendChild(inp);
+        tr.insertBefore(newTd, amtTd);
+      });
+
+      renderHeaders();
+    }
+
+    /* ═══════════════════════════════
+       REMOVE COLUMN
+    ═══════════════════════════════ */
+    function removeCol(colId) {
+      const col = colDefs.find(c => c.id === colId);
+      if (!col || col.fixed) return;
+      if (colDefs.length <= 2) { alert('Cannot remove this column.'); return; }
+
+      colDefs = colDefs.filter(c => c.id !== colId);
+
+      document.querySelectorAll('#tbody tr').forEach(tr => {
+        tr.querySelector(`td[data-col="${colId}"]`)?.remove();
+      });
+
+      renderHeaders();
+      recalcTotal();
+    }
+
+    /* ═══════════════════════════════
+       MOVE COLUMN
+    ═══════════════════════════════ */
+    function moveCol(colId, dir) {
+      const idx = colDefs.findIndex(c => c.id === colId);
+      if (idx < 0) return;
+      const targetIdx = idx + dir;
+      if (targetIdx < 0 || targetIdx >= colDefs.length) return;
+      if (colDefs[targetIdx]?.fixed) return;
+
+      const otherColId = colDefs[targetIdx].id;
+      [colDefs[idx], colDefs[targetIdx]] = [colDefs[targetIdx], colDefs[idx]];
+
+      document.querySelectorAll('#tbody tr').forEach(tr => {
+        const tdA = tr.querySelector(`td[data-col="${colId}"]`);
+        const tdB = tr.querySelector(`td[data-col="${otherColId}"]`);
+        if (!tdA || !tdB) return;
+        if (dir === -1) { tr.insertBefore(tdA, tdB); }
+        else { tr.insertBefore(tdB, tdA); }
+      });
+
+      renderHeaders();
+    }
+
+    /* ═══════════════════════════════
+       TOGGLE AUTO CALC
+    ═══════════════════════════════ */
+    function toggleAutoCalc() {
+      autoCalc = !autoCalc;
+      updateAutoCalcBtn();
+      document.querySelectorAll('.ai').forEach(inp => {
+        inp.readOnly = autoCalc;
+        inp.style.cursor = autoCalc ? 'default' : 'text';
+      });
+      if (autoCalc) {
+        document.querySelectorAll('#tbody tr').forEach(tr => {
+          const qi = tr.querySelector('.qi');
+          const ri = tr.querySelector('.ri');
+          const ai = tr.querySelector('.ai');
+          if (qi && ri && ai) {
+            const q = parseFloat(qi.value) || 0;
+            const r = parseFloat(ri.value) || 0;
+            if (q > 0 && r > 0) ai.value = (q * r).toFixed(2);
+          }
+        });
+        recalcTotal();
+      }
+    }
+
+    function updateAutoCalcBtn() {
+      const btn = document.getElementById('autoCalcBtn');
+      if (btn) btn.classList.toggle('active', autoCalc);
+    }
+
+    /* ── Toggle VAT ── */
+    function toggleVAT() {
+      vatEnabled = !vatEnabled;
+      document.getElementById('vatToggleBtn').classList.toggle('active', vatEnabled);
+      document.getElementById('vatRow').style.display = vatEnabled ? '' : 'none';
+      recalcTotal();
+    }
+
+    /* ═══════════════════════════════
+       ADD ROW
+    ═══════════════════════════════ */
+    function addRow() {
+      rowId++;
+      const id = rowId;
+      rowOrder.push(id);
+
+      const tr = document.createElement('tr');
+      tr.id = `r${id}`;
+
+      let html = `<td class="sr" id="sr${id}">${rowOrder.length}</td>`;
+
+      colDefs.forEach(col => {
+        const isNum = col.type === 'number';
+        const ph = (col.isAmount || col.isRate) ? '0.00' : col.isQty ? '0' : '—';
+        const cls = [
+          col.isAmount ? 'ai amt-inp' : '',
+          col.isRate ? 'ri' : '',
+          col.isQty ? 'qi' : '',
+        ].join(' ').trim();
+        const eleId = col.isAmount ? `a${id}` : col.isRate ? `rt${id}` : col.isQty ? `q${id}` : col.isDesc ? `d${id}` : '';
+        const ro = (col.isAmount && autoCalc) ? 'readonly' : '';
+        const cur = (col.isAmount && autoCalc) ? 'cursor:default;' : '';
+
+        if (isNum) {
+          html += `<td class="${col.isDesc ? 'dtd' : ''}" data-col="${col.id}">
+          <input type="number" ${ro} min="0" step="any"
+            placeholder="${ph}" class="${cls}"
+            ${eleId ? `id="${eleId}"` : ''}
+            inputmode="decimal"
+            style="${cur}"/>
+        </td>`;
+        } else {
+          html += `<td class="${col.isDesc ? 'dtd' : ''}" data-col="${col.id}">
+          <textarea rows="1" placeholder="${ph}" class="${cls}"
+            ${eleId ? `id="${eleId}"` : ''}
+            style="${cur}"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        </td>`;
+        }
+      });
+
+      html += `<td class="no-print"><button class="rm-btn" onclick="removeRow(${id})" title="Remove">&#10005;</button></td>`;
+      tr.innerHTML = html;
+
+      const qi = tr.querySelector('.qi');
+      const ri = tr.querySelector('.ri');
+      const ai = tr.querySelector('.ai');
+
+      if (qi && ri && ai) {
+        const qrChange = () => {
+          if (!autoCalc) return;
+          const q = parseFloat(qi.value) || 0;
+          const r = parseFloat(ri.value) || 0;
+          if (q > 0 && r > 0) { ai.value = (q * r).toFixed(2); }
+          else if (q === 0 && r === 0) { ai.value = ''; }
+          recalcTotal();
+        };
+        qi.addEventListener('input', qrChange);
+        ri.addEventListener('input', qrChange);
+      }
+
+      tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', recalcTotal));
+
+      document.getElementById('tbody').appendChild(tr);
+      updateRowCount();
+    }
+
+    /* ── Remove Row ── */
+    function removeRow(id) {
+      if (rowOrder.length <= 1) { alert('At least one row is required.'); return; }
+      document.getElementById(`r${id}`)?.remove();
+      rowOrder = rowOrder.filter(r => r !== id);
+      renumber();
+      recalcTotal();
+      updateRowCount();
+    }
+
+    /* ── Renumber ── */
+    function renumber() {
+      document.querySelectorAll('#tbody tr').forEach((tr, i) => {
+        const srEl = tr.querySelector('[id^="sr"]');
+        if (srEl) srEl.textContent = i + 1;
+      });
+    }
+
+    /* ═══════════════════════════════
+       RECALC TOTAL
+    ═══════════════════════════════ */
+    function recalcTotal() {
+      let subtotal = 0;
+      document.querySelectorAll('.ai').forEach(inp => { subtotal += parseFloat(inp.value) || 0; });
+      document.getElementById('subVal').textContent = fmtN(subtotal);
+
+      const vat = vatEnabled ? subtotal * 0.05 : 0;
+      const grand = subtotal + vat;
+      if (vatEnabled) document.getElementById('vatVal').textContent = fmtN(vat);
+
+      const sym = SYM[curCode] || curCode;
+      document.getElementById('gtVal').innerHTML = `<span id="curSymDisplay">${sym}</span> ${fmtN(grand)}`;
+    }
+
+    /* ── Format number ── */
+    function fmtN(n) {
+      return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    /* ── Currency change ── */
+    function applyCurrency() {
+      curCode = document.getElementById('curSel').value;
+      renderHeaders();
+      recalcTotal();
+    }
+
+    /* ── Row count label ── */
+    function updateRowCount() {
+      const c = rowOrder.length;
+      document.getElementById('rowCnt').textContent = `${c} row${c !== 1 ? 's' : ''}`;
+    }
+
+    /* ═══════════════════════════════
+       SAVE JSON
+    ═══════════════════════════════ */
+    function saveData() {
+      const items = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
+        const item = {};
+        colDefs.forEach(col => {
+          item[col.id] = tr.querySelector(`td[data-col="${col.id}"] input, td[data-col="${col.id}"] textarea`)?.value || '';
+        });
+        return item;
+      });
+      const data = {
+        contentEditables: Array.from(document.querySelectorAll('[contenteditable]')).map(el => el.innerHTML),
+        metaInputs: Array.from(document.querySelectorAll('.meta-box-body input, .meta-box-body textarea')).map(el => el.value),
+        quoteNo: document.getElementById('quoteNo').value,
+        propDate: document.getElementById('propDate').value,
+        payDetails: {
+          payTerms: document.getElementById('payTerms').value,
+          bankName: document.getElementById('bankName').value,
+          accName: document.getElementById('accName').value,
+          accNum: document.getElementById('accNum').value,
+          ibanNum: document.getElementById('ibanNum').value,
+        },
+        currency: document.getElementById('curSel').value,
+        vatEnabled, autoCalc, colDefs, items,
+      };
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2));
+      const a = document.createElement('a');
+      a.href = dataStr; a.download = 'proposal_data.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    /* ═══════════════════════════════
+       LOAD JSON
+    ═══════════════════════════════ */
+    function loadData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.contentEditables) {
+            const ce = document.querySelectorAll('[contenteditable]');
+            data.contentEditables.forEach((val, i) => { if (ce[i]) ce[i].innerHTML = val; });
+          }
+          if (data.metaInputs) {
+            const mi = document.querySelectorAll('.meta-box-body input, .meta-box-body textarea');
+            data.metaInputs.forEach((val, i) => {
+              if (mi[i]) {
+                mi[i].value = val;
+                if (mi[i].tagName === 'TEXTAREA') {
+                  mi[i].style.height = 'auto';
+                  mi[i].style.height = mi[i].scrollHeight + 'px';
+                }
+              }
+            });
+          }
+          if (data.quoteNo) document.getElementById('quoteNo').value = data.quoteNo;
+          if (data.propDate) document.getElementById('propDate').value = data.propDate;
+          if (data.payDetails) {
+            const pd = data.payDetails;
+            if (pd.payTerms) document.getElementById('payTerms').value = pd.payTerms;
+            if (pd.bankName) document.getElementById('bankName').value = pd.bankName;
+            if (pd.accName) document.getElementById('accName').value = pd.accName;
+            if (pd.accNum) document.getElementById('accNum').value = pd.accNum;
+            if (pd.ibanNum) document.getElementById('ibanNum').value = pd.ibanNum;
+          }
+          if (data.currency) { document.getElementById('curSel').value = data.currency; curCode = data.currency; }
+          if (data.colDefs) colDefs = data.colDefs;
+          if (typeof data.autoCalc === 'boolean') autoCalc = data.autoCalc;
+          if (typeof data.vatEnabled === 'boolean') {
+            vatEnabled = data.vatEnabled;
+            document.getElementById('vatToggleBtn').classList.toggle('active', vatEnabled);
+            document.getElementById('vatRow').style.display = vatEnabled ? '' : 'none';
+          }
+          document.getElementById('tbody').innerHTML = '';
+          rowId = 0; rowOrder = []; colIdCtr = 0;
+          renderHeaders();
+          updateAutoCalcBtn();
+          if (data.items) {
+            data.items.forEach(item => {
+              addRow();
+              const tr = document.getElementById('r' + rowId);
+              colDefs.forEach(col => {
+                const inp = tr?.querySelector(`td[data-col="${col.id}"] input, td[data-col="${col.id}"] textarea`);
+                if (inp) {
+                  inp.value = item[col.id] || '';
+                  // Auto-expand textareas immediately after loading data
+                  if (inp.tagName === 'TEXTAREA') {
+                    inp.style.height = 'auto';
+                    inp.style.height = inp.scrollHeight + 'px';
+                  }
+                }
+              });
+            });
+          }
+          recalcTotal();
+        } catch (err) {
+          alert("Error loading file. Please make sure it's a valid JSON generated by this tool.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+  </script>
+
+</body>
+
+</html>
